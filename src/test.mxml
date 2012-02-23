@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:mx="library://ns.adobe.com/flex/mx"
+    minHeight="600"
+    minWidth="955"
+    layout="{new VerticalLayout()}"
+    creationComplete="onCreationComplete()"
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark">
+
+    <fx:Script>
+        <![CDATA[
+            import com.codeazur.as3swf.SWF;
+            import com.codeazur.as3swf.tags.ITag;
+            import com.codeazur.as3swf.tags.TagDoABC;
+            
+            import org.as3commons.bytecode.reflect.ByteCodeType;
+            import org.as3commons.bytecode.tags.DoABCTag;
+            import org.as3commons.bytecode.util.AbcSpec;
+            import org.mixingloom.SwfContext;
+            import org.mixingloom.SwfTag;
+            import org.mixingloom.byteCode.ByteParser;
+            import org.mixingloom.patcher.StringModifierPatcher;
+            import org.mixingloom.utils.ByteArrayUtils;
+            
+            import spark.layouts.VerticalLayout;
+            
+            private var final : ByteArray = new ByteArray();
+
+            protected function onCreationComplete() : void {
+                var loader : URLLoader = new URLLoader();
+                loader.dataFormat = URLLoaderDataFormat.BINARY;
+                loader.load(new URLRequest("prefs.swf"));
+                loader.addEventListener(Event.COMPLETE, onLoadComplete);
+                //loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onLoadComplete);
+            }
+            
+            public function getData() : String {
+                return new Foo().getData();
+            }
+
+            private function onLoadComplete(event:Event):void
+            {
+                var loader : URLLoader = event.target as URLLoader;
+                var ba  : ByteArray = loader.data;
+                
+                var originalString : String = "CommuniGate Pronto! ";
+                var replacementString : String = "DataBoost MobileOffice ";
+                
+                var searchByteArray:ByteArray = new ByteArray();
+                AbcSpec.writeStringInfo(originalString, searchByteArray);
+
+                var replacementByteArray:ByteArray = new ByteArray();
+                AbcSpec.writeStringInfo(replacementString, replacementByteArray);
+
+
+                var parser:ByteParser = new ByteParser();
+                var swfContext:SwfContext = new SwfContext();
+                swfContext.originalUncompressedSwfBytes = parser.uncompressSwf( ba );
+                swfContext.swfTags = parser.getFrameTwoTags(swfContext.originalUncompressedSwfBytes);
+                var resultBytes : ByteArray;
+                for each (var swfTag:SwfTag in swfContext.swfTags) {
+                    if (swfTag.type == DoABCTag.TAG_ID) {
+                        //resultBytes = swfTag.tagBody = ByteArrayUtils.findAndReplaceFirstOccurrence(swfTag.tagBody, searchByteArray, replacementByteArray);
+                    }
+                }
+
+                var swf:SWF = new SWF(ba);
+                var counter : Number = 0;
+                for each (var tag : ITag in swf.tags) {
+                    trace("Tag " + tag.name);
+                    if (tag.name == "DoABC") {
+                        counter++;
+                        var doAbcTag : TagDoABC = TagDoABC(tag);
+                        //trace(doAbcTag.name);
+                        //trace(getFriendlByteArray(doAbcTag.bytes));
+                        if (true) {
+                            doAbcTag._bytes.position = 0;
+                            doAbcTag._bytes = ByteArrayUtils.findAndReplaceFirstOccurrence(doAbcTag._bytes, searchByteArray, replacementByteArray);
+                        }
+                    }
+                }
+
+                //final = ByteArrayUtils.findAndReplaceFirstOccurrence(ba, searchByteArray, replacementByteArray);
+                
+                swf.publish(final);
+
+
+                trace("Finised");
+                return;
+                
+                //var ds:AbcDeserializer = new AbcDeserializer(ba); 
+                //var abcFile:AbcFile = ds.deserialize();
+
+                /*var io:SWFFileIO = new SWFFileIO();
+                var swfFile:SWFFile = io.read(ba);
+
+                var abcTags:Array = swfFile.getTagsByType(DoABCTag);
+                for each(var tag:DoABCTag in abcTags){
+                    var abcFile:AbcFile = tag.abcFile;
+                    for each (var classInfo : ClassInfo in abcFile.classInfo) {
+                        if (classInfo.classMultiname.name == "GeneralPrefsPanel") {
+                            trace(classInfo.classMultiname.name);
+                            var d = classInfo.getMethodTraitByName("getVersionName");
+                            var v = classInfo.getSlotTraitByName("getVersionName");
+                            var v = classInfo.methodInfo;
+                            trace(classInfo.methodTraits);
+                        }
+                    }
+                }*/
+
+                trace();
+            }
+
+            private function getFriendlByteArray(ba : ByteArray) : String {
+                ba.position = 0;
+                var result : Array = [];
+                while (ba.bytesAvailable) {
+                    var byte : int = ba.readByte();
+                    result.push(byte.toString(8));
+                }
+                return result.join(" ");
+            }
+            
+            private var fr : FileReference = new FileReference();
+            protected function button1_clickHandler(event:MouseEvent):void
+            {
+                // TODO Auto-generated method stub
+                fr.save(final);
+            }
+            
+        ]]>
+    </fx:Script>
+    <fx:Declarations>
+        <!-- Place non-visual elements (e.g., services, value objects) here -->
+    </fx:Declarations>
+    <s:Button label="Save" click="button1_clickHandler(event)"/>
+    <s:Label text="CommuniGate Pronto"/>
+    <s:Label text="{getData()}"/>
+    
+
+</s:Application>
