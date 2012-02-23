@@ -1,0 +1,6 @@
+/target
+/bin-debug
+/*.ipa
+/bin-release-temp
+/bin-release
+/.svn

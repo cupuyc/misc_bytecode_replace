@@ -13,13 +13,11 @@
             import com.codeazur.as3swf.tags.ITag;
             import com.codeazur.as3swf.tags.TagDoABC;
             
-            import org.as3commons.bytecode.reflect.ByteCodeType;
             import org.as3commons.bytecode.tags.DoABCTag;
             import org.as3commons.bytecode.util.AbcSpec;
             import org.mixingloom.SwfContext;
             import org.mixingloom.SwfTag;
             import org.mixingloom.byteCode.ByteParser;
-            import org.mixingloom.patcher.StringModifierPatcher;
             import org.mixingloom.utils.ByteArrayUtils;
             
             import spark.layouts.VerticalLayout;
